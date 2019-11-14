@@ -6,14 +6,14 @@
 
 CCFLAGS = -ggdb -Wall -std=c++11
 
-Assign6: Assign6.o Memory.o
-	g++ $(CCFLAGS) -o Assign6 Assign6.o Memory.o
+Assign6: Assign6.o Block.o
+	g++ $(CCFLAGS) -o Assign6 Assign6.o Block.o
 
-Assign6.o: Assign6.cxx  Memory.h 
+Assign6.o: Assign6.cxx  Block.h 
 	g++ $(CCFLAGS) -c Assign6.cxx
 
-Memory.o: Memory.cxx Memory.h
-	g++ $(CCFLAGS) -c Memory.cxx
+Block.o: Block.cxx Block.h
+	g++ $(CCFLAGS) -c Block.cxx
 
 clean:
 	-rm *.o Assign6

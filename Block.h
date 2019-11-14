@@ -11,12 +11,16 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
+#include <string>
+using std::string;
+
 class Block {
   public:
+    Block(int, int, int, string);
     void print();
+    int size;
   private:
     int startingAddress;
-    int size;
     string ownerProcessId;
     string blockId;
     Block* blockPtr1;

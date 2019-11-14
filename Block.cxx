@@ -14,8 +14,15 @@
 using std::cout;
 using std::endl;
 
+Block::Block(int startingAddress, int size, int ownerProcessId, string blockId)
+{
+  this->startingAddress = startingAddress;
+  this->size = size;
+  this->ownerProcessId = ownerProcessId;
+  this->blockId = blockId;
+}
+
 void Block::print()
 {
-
-  cout << "Block" << endl;
+  cout << "Start Address = " << this->startingAddress << " Size = " << this->size << endl;
 }
