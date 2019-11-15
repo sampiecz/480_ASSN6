@@ -71,10 +71,9 @@ int main(int argc, char* argv[])
     cout << "Simulation of Memory Management using the First-Fit algorithm" << endl;
   }
  
-  // 0.5 
   cout << "\nBeginning of the run" << endl;
  
-  // 2. Open and read input file. Process transactions.
+  // Open and read input file. Process transactions.
   int id, size, processId; 
   string line, blockId;
   ifstream infile(filename);
@@ -83,7 +82,7 @@ int main(int argc, char* argv[])
     // Ensure available blocks are sorted
     availableBlocks.sort();
  
-    // 3. Every HOW_OFTEN print inUseBlocks and availableBlocks.
+    // Every HOW_OFTEN print inUseBlocks and availableBlocks.
     if (count % HOW_OFTEN == 0)
     {
       printStatus(false);
@@ -149,13 +148,10 @@ int main(int argc, char* argv[])
  
   }
  
-  // 5. Close file.
-  // Never opened one so not necesssary.
+  // Display exit message. 
+  cout << "\nEnd of the run" << endl;
  
-  // 6. Display exit message. 
-    cout << "\nEnd of the run" << endl;
- 
-  // 4. Print empty lists.
+  // Print empty lists.
   printStatus(false);
   return 0;
 }
@@ -164,32 +160,73 @@ int main(int argc, char* argv[])
 // Function Definitions
 void load(int processId, int size, string blockId, string whichAlgorithm)
 {
+  int temp = 15 * megabyte;
+  bool isSpace = false;
+  Block* blockPtr;
+
   cout << "\nTransaction: request to load process " << processId << ", block ID " << blockId << " using " << size << " bytes" << endl; 
   if (whichAlgorithm == "B")
   {
+    for (auto block : availableBlocks)
+    {
+      if ((block->size - size) < temp && (block->size - size) > 0)
+      {
+        temp = (block->size - size);
+        blockPtr = block;
+        isSpace = true;
+      }
+    }
+    if (isSpace)
+    {
+      for (auto block : availableBlocks)
+      {
+        if (block->startingAddress == blockPtr->startingAddress)
+        {
+          block->size -= size;
+          startingAddress = block->startingAddress;
+          block->startingAddress += size;
+
+          inUseBlocks.push_front(new Block(startingAddress, size, id, name));
+
+          cout << "Found a block of size " << blockPtr->size << endl;
+          cout << "Success in allocating a block" << endl;
+          
+          break;
+        }
+      }
+    }
+    else
+    {
+      cout << "Unable to load or allocate: " << id << endl;
+    }
   }
   else if (whichAlgorithm == "F")
   {
-    bool found = false;
-    for (auto& block : availableBlocks)
+
+    for (auto block : availableBlocks)
     {
-      if (size <= block->size)
+      if ((block->size - size) >= 0)
       {
-        cout << "Found a block of size " << block->size << endl;
-        block->size -= size;
-        if (block->size == 0)
-        {
-          delete block;
-        }
-        inUseBlocks.push_front(new Block(block->startingAddress, size, processId, blockId));
-        cout << "Success in allocating a block" << endl;
-        found = true;
+        isSpace = true;
+        blockPtr = block;
         break;
       }
     }
-    if (found == false)
+
+    if (isSpace)
     {
-      cout << "There is no sufficiently large block." << endl;
+      blockPtr->size -= size;
+      startingAddress = blockPtr->startingAddress;
+      blockPtr->startingAddress += size;
+      inUseBlocks.push_front(new Block(startingAddress, size, id, name));
+
+      cout << "Found a block of size " << blockPtr->size << endl
+      << "Success in allocating a block" << endl;
+      break;
+    }
+    else
+    { 
+      cout << "Unable to load or allocate: " << id << endl;
     }
   }
   printStatus(false);
@@ -197,86 +234,199 @@ void load(int processId, int size, string blockId, string whichAlgorithm)
  
 void allocate(int processId, int size, string blockId, string whichAlgorithm)
 {
-  cout << "\nTransaction: request to allocate " << size << " bytes for process " << processId << ", block ID: " << blockId << endl;
- 
+  int temp = 15 * megabyte;
+  bool isSpace = false;
+  Block* blockPtr;
+
+  cout << "\nTransaction: request to load process " << processId << ", block ID " << blockId << " using " << size << " bytes" << endl; 
   if (whichAlgorithm == "B")
   {
-    // cout << "Found a block of size " << size << endl;
+    for (auto block : availableBlocks)
+    {
+      if ((block->size - size) < temp && (block->size - size) > 0)
+      {
+        temp = (block->size - size);
+        blockPtr = block;
+        isSpace = true;
+      }
+    }
+    if (isSpace)
+    {
+      for (auto block : availableBlocks)
+      {
+        if (block->startingAddress == blockPtr->startingAddress)
+        {
+          block->size -= size;
+          startingAddress = block->startingAddress;
+          block->startingAddress += size;
+
+          inUseBlocks.push_front(new Block(startingAddress, size, id, name));
+
+          cout << "Found a block of size " << blockPtr1->size << endl;
+          cout << "Success in allocating a block" << endl;
+          
+          break;
+        }
+      }
+    }
+    else
+    {
+      cout << "Unable to load or allocate: " << id << endl;
+    }
   }
   else if (whichAlgorithm == "F")
   {
-    cout << "Found a block of size " << size << endl;
-    bool found = false;
-    for (auto& block : availableBlocks)
+
+    for (auto block : availableBlocks)
     {
-      if (size <= block->size)
+      if ((block->size - size) >= 0)
       {
-        block->size -= size;
-        if (block->size == 0)
-        {
-          delete block;
-        }
-        inUseBlocks.push_front(new Block(block->startingAddress, size, processId, blockId));
-        cout << "Success in allocating a block" << endl;
-        found = true;
+        isSpace = true;
+        blockPtr = block;
+        break;
       }
     }
-    if (found == false)
+
+    if (isSpace)
     {
-      cout << "There is no sufficiently large block." << endl;
+      blockPtr->size -= size;
+      startingAddress = blockPtr->startingAddress;
+      blockPtr->startingAddress += size;
+      inUseBlocks.push_front(new Block(startingAddress, size, id, name));
+
+      cout << "Found a block of size " << blockPtr->size << endl
+      << "Success in allocating a block" << endl;
+      break;
+    }
+    else
+    { 
+      cout << "Unable to load or allocate: " << id << endl;
     }
   }
+  printStatus(false);
 }
  
 void deallocate(int processId, string blockId)
 {
-  cout << "\nTransaction: request to deallocate block ID " << blockId << " for process " << processId << endl;
+  cout << "Transaction: request to deallocate process " << id << endl;
+  Block* tempIter;
   bool found = false;
-  for (auto& block : inUseBlocks)
-  {
-    if (block->ownerProcessId == processId && block->blockId == blockId)
+
+  for (auto block : inUseBlocks)
+  { 
+    if (block->ID == id)
     {
-      // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
-      found = true;
-    }
-  }
- 
-  if (found == false)
-  {
-    cout << "Unable to comply as the indicated block cannot be found." << endl;
-  }
-  cout << "Success in deallocating a block" << endl;
-}
- 
-void terminate(int processId)
-{
-  bool found = false;
-  cout << "\nTransaction: request to terminate process " << processId << endl;
-  for (auto& block : inUseBlocks)
-  {
-    if (block->ownerProcessId == processId)
-    {
-      // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
-      // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
+      Block* theBlock = new Block(block->startingAddress, block->size, 0, "");
+
+      for (auto blockPtr : availableBlocks)
+      {
+        if (blockPtr->startingAddress > block->startingAddress)
+        {
+          availableBlocks.insert(blockPtr, theBlock);
+          found = true;
+          break;
+        }
+      }
+      if (!found)
+      {
+        availableBlocks.push_back(theBlock);
+      }
+
+      for (auto blockPtr : availableBlocks)
+      {
+        tempIter = blockPtr;
+        tempIter++;
+        if ((blockPtr->size + blockPtr->startingAddress) == (tempIter->startingAddress))
+        {
+          if ((blockPtr->size + tempIter->size) <= 4 * megabyte)
+          {
+            cout << "Merging two blocks at " << blockPtr->startingAddress << " and " << tempIter->startingAddress << endl;
+            blockPtr->size = blockPtr->size + tempIter->size;
+            availableBlocks.erase(tempIter);
+            blockPtr--;
+          }
+        }
+      }
+
       delete block;
       found = true;
     }
   }
-  if (found == false)
+
+  if (!found)
   {
-    cout << "Unable to comply as the indicated process cannot be found." << endl;
+    cout << "Unable to terminate id: " << id << endl;
   }
   else
-  {
+  { 
     cout << "Success in terminating a process" << endl;
   }
+
+}
+ 
+void terminate(int processId)
+{
+  cout << "Transaction: request to terminate process " << id << endl;
+  Block* tempIter;
+  bool found = false;
+
+  for (auto block : inUseBlocks)
+  { 
+    if (block->ID == id)
+    {
+      Block* theBlock = new Block(block->startingAddress, block->size, 0, "");
+
+      for (auto blockPtr : availableBlocks)
+      {
+        if (blockPtr->startingAddress > block->startingAddress)
+        {
+          availableBlocks.insert(blockPtr, theBlock);
+          found = true;
+          break;
+        }
+      }
+      if (!found)
+      {
+        availableBlocks.push_back(theBlock);
+      }
+
+      for (auto blockPtr : availableBlocks)
+      {
+        tempIter = blockPtr;
+        tempIter++;
+        if ((blockPtr->size + blockPtr->startingAddress) == (tempIter->startingAddress))
+        {
+          if ((blockPtr->size + tempIter->size) <= 4 * megabyte)
+          {
+            cout << "Merging two blocks at " << blockPtr->startingAddress << " and " << tempIter->startingAddress << endl;
+            blockPtr->size = blockPtr->size + tempIter->size;
+            availableBlocks.erase(tempIter);
+            blockPtr--;
+          }
+        }
+      }
+
+      delete block;
+      found = true;
+    }
+  }
+
+  if (!found)
+  {
+    cout << "Unable to terminate id: " << id << endl;
+  }
+  else
+  { 
+    cout << "Success in terminating a process" << endl;
+  }
+
 }
  
 void printStatus(bool transaction)
 {
   // Print available blocks & size
   cout << "\nList of available blocks" << endl;
-  for (auto& block : availableBlocks)
+  for (auto block : availableBlocks)
   {
     block->print(transaction);
     availableSize += block->size;
@@ -292,7 +442,7 @@ void printStatus(bool transaction)
   }
   else
   {
-    for (auto& block : inUseBlocks)
+    for (auto block : inUseBlocks)
     {
       block->print(true);
       inUseSize += block->size;

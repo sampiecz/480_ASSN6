@@ -23,9 +23,6 @@ class Block {
     int startingAddress;
     int ownerProcessId;
     string blockId;
-  private:
-    Block* blockPtr1;
-    Block* blockPtr2;
 };
 
 #endif
