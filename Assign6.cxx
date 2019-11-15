@@ -250,10 +250,26 @@ void deallocate(int processId, string blockId)
  
 void terminate(int processId)
 {
+  bool found = false;
   cout << "\nTransaction: request to terminate process " << processId << endl;
-  // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
-  // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
-  cout << "Success in terminating a process " << endl;
+  for (auto& block : inUseBlocks)
+  {
+    if (block->ownerProcessId == processId)
+    {
+      // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
+      // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
+      delete block;
+      found = true;
+    }
+  }
+  if (found == false)
+  {
+    cout << "Unable to comply as the indicated process cannot be found." << endl;
+  }
+  else
+  {
+    cout << "Success in terminating a process" << endl;
+  }
 }
  
 void printStatus(bool transaction)
