@@ -21,11 +21,8 @@ class Block {
     int size;
     bool operator<(const Block &rhs) const { return size < rhs.size; }
     int startingAddress;
-    int ownerProcessId;
+    int processId;
     string blockId;
-  private:
-    Block* blockPtr1;
-    Block* blockPtr2;
 };
 
 #endif

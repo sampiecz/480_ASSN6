@@ -234,7 +234,7 @@ void deallocate(int processId, string blockId)
   bool found = false;
   for (auto& block : inUseBlocks)
   {
-    if (block->ownerProcessId == processId && block->blockId == blockId)
+    if (block->processId == processId && block->blockId == blockId)
     {
       // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
       found = true;
@@ -254,7 +254,7 @@ void terminate(int processId)
   cout << "\nTransaction: request to terminate process " << processId << endl;
   for (auto& block : inUseBlocks)
   {
-    if (block->ownerProcessId == processId)
+    if (block->processId == processId)
     {
       // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
       // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
@@ -276,6 +276,8 @@ void printStatus(bool transaction)
 {
   // Print available blocks & size
   cout << "\nList of available blocks" << endl;
+  availableSize = 0;
+  inUseSize = 0;
   for (auto& block : availableBlocks)
   {
     block->print(transaction);

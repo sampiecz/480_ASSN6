@@ -18,7 +18,7 @@ Block::Block(int startingAddress, int size, int processId, string blockId)
 {
   this->startingAddress = startingAddress;
   this->size = size;
-  this->ownerProcessId = processId;
+  this->processId = processId;
   this->blockId = blockId;
 }
 
@@ -26,7 +26,7 @@ void Block::print(bool transaction)
 {
   if (transaction == true)
   {
-    cout << "Start Address = " << this->startingAddress << " Size = " << this->size << " Process ID = " << this->ownerProcessId << " Block ID = " << this->blockId << endl;
+    cout << "Start Address = " << this->startingAddress << " Size = " << this->size << " Process ID = " << this->processId << " Block ID = " << this->blockId << endl;
   }
   else
   {
