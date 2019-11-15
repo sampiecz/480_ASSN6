@@ -36,13 +36,13 @@ int availableSize;
 int count = 0;
 int kilobyte = 1024;
 int megabyte = 1024*1024;
-list<Block*> inUseBlocks = {};
-list<Block*> availableBlocks = {
-  new Block(3*1024*1024, megabyte, 0, ""), 
-  new Block(4*1024*1024, megabyte*2, 0, ""),
-  new Block(6*1024*1024, megabyte*2, 0, ""),
-  new Block(8*1024*1024, megabyte*4, 0, ""),
-  new Block(12*1024*1024, megabyte*4, 0, "")
+list<Block> inUseBlocks = {};
+list<Block> availableBlocks = {
+  Block(3*1024*1024, megabyte, 0, ""), 
+  Block(4*1024*1024, megabyte*2, 0, ""),
+  Block(6*1024*1024, megabyte*2, 0, ""),
+  Block(8*1024*1024, megabyte*4, 0, ""),
+  Block(12*1024*1024, megabyte*4, 0, "")
 };
  
 // Prototypes
@@ -164,24 +164,27 @@ int main(int argc, char* argv[])
 // Function Definitions
 void load(int processId, int size, string blockId, string whichAlgorithm)
 {
+  
+  list<Block>::iterator iteratorA, iteratorI;
   cout << "\nTransaction: request to load process " << processId << ", block ID " << blockId << " using " << size << " bytes" << endl; 
+
   if (whichAlgorithm == "B")
   {
   }
   else if (whichAlgorithm == "F")
   {
     bool found = false;
-    for (auto& block : availableBlocks)
+    for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++)
     {
-      if (size <= block->size)
+      if (size <= iteratorA->size)
       {
-        cout << "Found a block of size " << block->size << endl;
-        block->size -= size;
-        if (block->size == 0)
+        cout << "Found a block of size " << iteratorA->size << endl;
+        iteratorA->size -= size;
+        if (iteratorA->size == 0)
         {
-          delete block;
+          availableBlocks.erase(iteratorA);
         }
-        inUseBlocks.push_front(new Block(block->startingAddress, size, processId, blockId));
+        inUseBlocks.push_front(Block(iteratorA->startingAddress, size, processId, blockId));
         cout << "Success in allocating a block" << endl;
         found = true;
         break;
@@ -197,28 +200,30 @@ void load(int processId, int size, string blockId, string whichAlgorithm)
  
 void allocate(int processId, int size, string blockId, string whichAlgorithm)
 {
-  cout << "\nTransaction: request to allocate " << size << " bytes for process " << processId << ", block ID: " << blockId << endl;
- 
+  
+  list<Block>::iterator iteratorA, iteratorI;
+  cout << "\nTransaction: request to load process " << processId << ", block ID " << blockId << " using " << size << " bytes" << endl; 
+
   if (whichAlgorithm == "B")
   {
-    // cout << "Found a block of size " << size << endl;
   }
   else if (whichAlgorithm == "F")
   {
-    cout << "Found a block of size " << size << endl;
     bool found = false;
-    for (auto& block : availableBlocks)
+    for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++)
     {
-      if (size <= block->size)
+      if (size <= iteratorA->size)
       {
-        block->size -= size;
-        if (block->size == 0)
+        cout << "Found a block of size " << iteratorA->size << endl;
+        iteratorA->size -= size;
+        if (iteratorA->size == 0)
         {
-          delete block;
+          availableBlocks.erase(iteratorA);
         }
-        inUseBlocks.push_front(new Block(block->startingAddress, size, processId, blockId));
+        inUseBlocks.push_front(Block(iteratorA->startingAddress, size, processId, blockId));
         cout << "Success in allocating a block" << endl;
         found = true;
+        break;
       }
     }
     if (found == false)
@@ -226,39 +231,124 @@ void allocate(int processId, int size, string blockId, string whichAlgorithm)
       cout << "There is no sufficiently large block." << endl;
     }
   }
-}
+  printStatus(false);}
  
 void deallocate(int processId, string blockId)
 {
-  cout << "\nTransaction: request to deallocate block ID " << blockId << " for process " << processId << endl;
+ // pushing a new block to the available blocks
+  // removing something from in use
+  //
+  // that means, i need to take the block from in use, 
+  // remove it from in use
   bool found = false;
-  for (auto& block : inUseBlocks)
+  bool insert = false;
+  list<Block>::iterator iteratorT, iteratorA, iteratorI;
+  cout << "\nTransaction: request to deallocate block ID " << blockId << " for process " << processId << endl;
+
+  for (iteratorI = inUseBlocks.begin(); iteratorI != inUseBlocks.end(); ++iteratorI)
   {
-    if (block->processId == processId && block->blockId == blockId)
+    if (iteratorI->processId == processId)
     {
+      Block theBlock = Block(iteratorI->startingAddress, iteratorI->size, 0, "");
+      list<Block>::iterator it;
+      for (it = availableBlocks.begin(); it != availableBlocks.end(); it++)
+      {
+        if (it->startingAddress > iteratorI->startingAddress)
+        {
+          availableBlocks.insert(it, theBlock);
+          insert = true;
+          break;
+        }
+      }
+      if (insert == false)
+      {
+        availableBlocks.push_back(theBlock);
+      }
+      for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++)
+      {
+        
+        iteratorT = iteratorA;
+        iteratorT++;
+        
+        if ((iteratorA->size + iteratorA->startingAddress) == iteratorT->startingAddress)
+        {
+          if ((iteratorT->size + iteratorA->size) <= megabyte *4)
+          {
+            iteratorA->size += iteratorT->size;
+            availableBlocks.erase(iteratorT);
+            iteratorA--;
+          }
+        }
+
+      }
       // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
+      inUseBlocks.erase(iteratorI);
+      iteratorI--;
       found = true;
     }
   }
- 
   if (found == false)
   {
-    cout << "Unable to comply as the indicated block cannot be found." << endl;
+    cout << "Unable to comply as the indicated process cannot be found." << endl;
   }
-  cout << "Success in deallocating a block" << endl;
+  else
+  {
+    cout << "Success in terminating a process" << endl;
+  }
+
 }
  
 void terminate(int processId)
 {
+  // pushing a new block to the available blocks
+  // removing something from in use
+  //
+  // that means, i need to take the block from in use, 
+  // remove it from in use
   bool found = false;
+  bool insert = false;
+  list<Block>::iterator iteratorT, iteratorA, iteratorI;
   cout << "\nTransaction: request to terminate process " << processId << endl;
-  for (auto& block : inUseBlocks)
+
+  for (iteratorI = inUseBlocks.begin(); iteratorI != inUseBlocks.end(); ++iteratorI)
   {
-    if (block->processId == processId)
+    if (iteratorI->processId == processId)
     {
+      Block theBlock = Block(iteratorI->startingAddress, iteratorI->size, 0, "");
+      list<Block>::iterator it;
+      for (it = availableBlocks.begin(); it != availableBlocks.end(); it++)
+      {
+        if (it->startingAddress > iteratorI->startingAddress)
+        {
+          availableBlocks.insert(it, theBlock);
+          insert = true;
+          break;
+        }
+      }
+      if (insert == false)
+      {
+        availableBlocks.push_back(theBlock);
+      }
+      for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++)
+      {
+        
+        iteratorT = iteratorA;
+        iteratorT++;
+        
+        if ((iteratorA->size + iteratorA->startingAddress) == iteratorT->startingAddress)
+        {
+          if ((iteratorT->size + iteratorA->size) <= megabyte *4)
+          {
+            iteratorA->size += iteratorT->size;
+            availableBlocks.erase(iteratorT);
+            iteratorA--;
+          }
+        }
+
+      }
       // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
-      // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
-      delete block;
+      inUseBlocks.erase(iteratorI);
+      iteratorI--;
       found = true;
     }
   }
@@ -278,10 +368,10 @@ void printStatus(bool transaction)
   cout << "\nList of available blocks" << endl;
   availableSize = 0;
   inUseSize = 0;
-  for (auto& block : availableBlocks)
+  for (auto block : availableBlocks)
   {
-    block->print(transaction);
-    availableSize += block->size;
+    block.print(transaction);
+    availableSize += block.size;
   }
   cout << "Total size of the list = " << availableSize << endl; 
  
@@ -294,10 +384,10 @@ void printStatus(bool transaction)
   }
   else
   {
-    for (auto& block : inUseBlocks)
+    for (auto block : inUseBlocks)
     {
-      block->print(true);
-      inUseSize += block->size;
+      block.print(true);
+      inUseSize += block.size;
     }
   }
   cout << "Total size of the list = " << inUseSize << endl; 
