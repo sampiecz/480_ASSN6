@@ -360,6 +360,7 @@ void terminate(int processId)
   {
     cout << "Success in terminating a process" << endl;
   }
+  printStatus(false);
 }
  
 void printStatus(bool transaction)
