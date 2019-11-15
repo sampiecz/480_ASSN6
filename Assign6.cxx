@@ -317,7 +317,8 @@ void deallocate(int processId, string blockId)
     if (block->ID == id)
     {
       Block* theBlock = new Block(block->startingAddress, block->size, 0, "");
-
+      
+      /*
       for (auto blockPtr : availableBlocks)
       {
         if (blockPtr->startingAddress > block->startingAddress)
@@ -327,11 +328,14 @@ void deallocate(int processId, string blockId)
           break;
         }
       }
+      */
+
       if (!found)
       {
         availableBlocks.push_back(theBlock);
       }
 
+      /*
       for (auto blockPtr : availableBlocks)
       {
         tempIter = blockPtr;
@@ -347,6 +351,7 @@ void deallocate(int processId, string blockId)
           }
         }
       }
+      */
 
       delete block;
       found = true;
@@ -405,7 +410,6 @@ void terminate(int processId)
           }
         }
       }
-
       delete block;
       found = true;
     }
