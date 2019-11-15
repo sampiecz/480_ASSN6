@@ -9,7 +9,7 @@ CCFLAGS = -ggdb -Wall -std=c++11
 Assign6: Assign6B.o Block.o
 	g++ $(CCFLAGS) -o Assign6 Assign6B.o Block.o
 
-Assign6.o: Assign6B.cxx  Block.h 
+Assign6B.o: Assign6B.cxx  Block.h 
 	g++ $(CCFLAGS) -c Assign6B.cxx
 
 Block.o: Block.cxx Block.h
