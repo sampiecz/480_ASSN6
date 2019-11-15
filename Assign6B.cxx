@@ -1,6 +1,6 @@
 /***********************************************************
 CSCI 480 - Assignment 6 - Fall 2019
-
+ 
 Progammer: Sam Piecz
 Z-ID: Z1732715
 Section: 2 
@@ -17,7 +17,7 @@ Date Due: Nov 13, 2019 Purpose: Memory Management.
 #include <fstream>
 #include <algorithm>
 #include <vector>
-
+ 
 using std::istringstream;
 using std::istream_iterator;
 using std::ifstream;
@@ -26,9 +26,9 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::list;
-
+ 
 #define HOW_OFTEN 5
-
+ 
 // Global Vars
 string filename = "data6.txt";
 int inUseSize;
@@ -44,14 +44,14 @@ list<Block*> availableBlocks = {
   new Block(8*1024*1024, megabyte*4, 0, ""),
   new Block(12*1024*1024, megabyte*4, 0, "")
 };
-
+ 
 // Prototypes
-void load(string, int, string, string);
-void allocate(string, int, string, string);
-void deallocate(string, string);
-void terminate(string);
+void load(int, int, string, string);
+void allocate(int, int, string, string);
+void deallocate(int, string);
+void terminate(int);
 void printStatus(bool transaction);
-
+ 
 int main(int argc, char* argv[])
 {
   // -1. If no arg handle error and exit(-1);
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     cout << "Must specify either a B or F." << endl;
     exit(-1);
   }
-
+ 
   // 0. Display Start Message.
   if (strcmp(argv[1], "B") == 0)
   {
@@ -70,59 +70,59 @@ int main(int argc, char* argv[])
   {
     cout << "Simulation of Memory Management using the First-Fit algorithm" << endl;
   }
-
+ 
   // 0.5 
   cout << "\nBeginning of the run" << endl;
-
+ 
   // 2. Open and read input file. Process transactions.
-  int size; 
-  string line, blockId, processId;
+  int id, size, processId; 
+  string line, blockId;
   ifstream infile(filename);
   while (getline(infile, line))
   {
     // Ensure available blocks are sorted
     availableBlocks.sort();
-
+ 
     // 3. Every HOW_OFTEN print inUseBlocks and availableBlocks.
     if (count % HOW_OFTEN == 0)
     {
       printStatus(false);
     }
-
+ 
     // Check for delimiter
     if (line.find("?") != string::npos)
     {
       break;
     }
-
+ 
     // Break line by spaces 
     istringstream iss(line);
     vector<string> tokens{istream_iterator<string>{iss}, istream_iterator<string>{}};
-
+ 
     // See what type of transaction and handle appropriately
     if (line.find("L") != string::npos)
     {
-      processId = tokens[1]; 
+      id = stoi(tokens[1]); 
       size = stoi(tokens[2]); 
       blockId = tokens[3]; 
-
+ 
       if (strcmp(argv[1], "B") == 0)
       {
-        load(processId, size, blockId, "B");
+        load(id, size, blockId, "B");
       }
       else if (strcmp(argv[1], "F") == 0)
       {
-        load(processId, size, blockId, "F");
+        load(id, size, blockId, "F");
       }
-
+ 
     }
     else if (line.find("A") != string::npos)
     {
-
-      processId = tokens[1];
+ 
+      processId = stoi(tokens[1]); 
       size = stoi(tokens[2]); 
       blockId = tokens[3];
-
+ 
       if (strcmp(argv[1], "B") == 0)
       {
         allocate(processId, size, blockId, "B");
@@ -131,38 +131,38 @@ int main(int argc, char* argv[])
       {
         allocate(processId, size, blockId, "F");
       }
-
+ 
     }
     else if (line.find("D") != string::npos)
     {
-      processId = tokens[1];
+      processId = stoi(tokens[1]);
       blockId = tokens[2];
       deallocate(processId, blockId);
     }
     else if (line.find("T") != string::npos)
     {
-      processId = tokens[1];
+      processId = stoi(tokens[1]);
       terminate(processId);
     }
-
+ 
     count++;
-
+ 
   }
-
+ 
   // 5. Close file.
   // Never opened one so not necesssary.
-
+ 
   // 6. Display exit message. 
-	cout << "\nEnd of the run" << endl;
-
+    cout << "\nEnd of the run" << endl;
+ 
   // 4. Print empty lists.
   printStatus(false);
   return 0;
 }
-
-
+ 
+ 
 // Function Definitions
-void load(string processId, int size, string blockId, string whichAlgorithm)
+void load(int processId, int size, string blockId, string whichAlgorithm)
 {
   cout << "\nTransaction: request to load process " << processId << ", block ID " << blockId << " using " << size << " bytes" << endl; 
   if (whichAlgorithm == "B")
@@ -177,12 +177,12 @@ void load(string processId, int size, string blockId, string whichAlgorithm)
       {
         cout << "Found a block of size " << block->size << endl;
         block->size -= size;
-        cout << "Test Print: " << processId << endl;
-        inUseBlocks.push_front(new Block(block->startingAddress, size, processId, blockId));
         if (block->size == 0)
         {
           delete block;
         }
+        inUseBlocks.push_front(new Block(block->startingAddress, size, processId, blockId));
+        cout << "Success in allocating a block" << endl;
         found = true;
         break;
       }
@@ -191,18 +191,14 @@ void load(string processId, int size, string blockId, string whichAlgorithm)
     {
       cout << "There is no sufficiently large block." << endl;
     }
-    else
-    {
-      cout << "Success in allocating a block" << endl;
-    }
   }
   printStatus(false);
 }
-
-void allocate(string processId, int size, string blockId, string whichAlgorithm)
+ 
+void allocate(int processId, int size, string blockId, string whichAlgorithm)
 {
   cout << "\nTransaction: request to allocate " << size << " bytes for process " << processId << ", block ID: " << blockId << endl;
-
+ 
   if (whichAlgorithm == "B")
   {
     // cout << "Found a block of size " << size << endl;
@@ -231,35 +227,35 @@ void allocate(string processId, int size, string blockId, string whichAlgorithm)
     }
   }
 }
-
-void deallocate(string processId, string blockId)
+ 
+void deallocate(int processId, string blockId)
 {
   cout << "\nTransaction: request to deallocate block ID " << blockId << " for process " << processId << endl;
   bool found = false;
   for (auto& block : inUseBlocks)
   {
-    if (block->processId.find(processId) != string::npos && block->blockId.find(blockId) != string::npos)
+    if (block->ownerProcessId == processId && block->blockId == blockId)
     {
       // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
       found = true;
     }
   }
-
+ 
   if (found == false)
   {
     cout << "Unable to comply as the indicated block cannot be found." << endl;
   }
   cout << "Success in deallocating a block" << endl;
 }
-
-void terminate(string processId)
+ 
+void terminate(int processId)
 {
   cout << "\nTransaction: request to terminate process " << processId << endl;
   // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
   // cout << "Merging two blocks at " << address << " and " << otherAddress << endl;
   cout << "Success in terminating a process " << endl;
 }
-
+ 
 void printStatus(bool transaction)
 {
   // Print available blocks & size
@@ -270,8 +266,8 @@ void printStatus(bool transaction)
     availableSize += block->size;
   }
   cout << "Total size of the list = " << availableSize << endl; 
-
-
+ 
+ 
   // Print in use blocks & size
   cout << "\nList of blocks in use" << endl;
   if (inUseBlocks.empty())
@@ -287,7 +283,7 @@ void printStatus(bool transaction)
     }
   }
   cout << "Total size of the list = " << inUseSize << endl; 
-
+ 
   // Reset counters
   inUseSize = 0;
   availableSize = 0;

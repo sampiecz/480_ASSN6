@@ -14,15 +14,22 @@
 using std::cout;
 using std::endl;
 
-Block::Block(int startingAddress, int size, int ownerProcessId, string blockId)
+Block::Block(int startingAddress, int size, int processId, string blockId)
 {
   this->startingAddress = startingAddress;
   this->size = size;
-  this->ownerProcessId = ownerProcessId;
+  this->ownerProcessId = processId;
   this->blockId = blockId;
 }
 
-void Block::print()
+void Block::print(bool transaction)
 {
-  cout << "Start Address = " << this->startingAddress << " Size = " << this->size << endl;
+  if (transaction == true)
+  {
+    cout << "Start Address = " << this->startingAddress << " Size = " << this->size << " Process ID = " << this->ownerProcessId << " Block ID = " << this->blockId << endl;
+  }
+  else
+  {
+    cout << "Start Address = " << this->startingAddress << " Size = " << this->size << endl;
+  }
 }

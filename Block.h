@@ -17,12 +17,13 @@ using std::string;
 class Block {
   public:
     Block(int, int, int, string);
-    void print();
+    void print(bool transaction);
     int size;
-  private:
+    bool operator<(const Block &rhs) const { return size < rhs.size; }
     int startingAddress;
-    string ownerProcessId;
+    int ownerProcessId;
     string blockId;
+  private:
     Block* blockPtr1;
     Block* blockPtr2;
 };
