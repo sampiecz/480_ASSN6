@@ -36,6 +36,7 @@ int availableSize;
 int count = 0;
 int kilobyte = 1024;
 int megabyte = 1024*1024;
+int startingAddress = 3 * megabyte;
 list<Block> inUseBlocks = {};
 list<Block> availableBlocks = {
   Block(3*1024*1024, megabyte, 0, ""), 
@@ -164,26 +165,47 @@ int main(int argc, char* argv[])
 // Function Definitions
 void load(int processId, int size, string blockId, string whichAlgorithm)
 {
-  
-  list<Block>::iterator iteratorA, iteratorI;
+  list<Block>::iterator iteratorA, iteratorB;
+  int temporarySize = 15 * megabyte; 
+  bool found = false, other = false;
   cout << "\nTransaction: request to load process " << processId << ", block ID " << blockId << " using " << size << " bytes" << endl; 
-
   if (whichAlgorithm == "B")
   {
+    for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++) 
+    {
+      if((iteratorA->size - size) < temporarySize && (iteratorA->size - size) > 0)
+      {
+        temporarySize = (iteratorA->size - size);
+        iteratorB = iteratorA;
+        found = true;
+        other = true;
+      }
+    }
+    if (other == true)
+    {
+      for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++)
+      {
+        if (iteratorA->startingAddress == iteratorB->startingAddress)
+        {
+          iteratorA->size -= size;
+          startingAddress = iteratorA->startingAddress;
+          iteratorA->startingAddress += size;
+          inUseBlocks.push_front(Block(startingAddress, size, processId, blockId)); 
+          break;
+        }
+      }
+    }
   }
   else if (whichAlgorithm == "F")
   {
-    bool found = false;
     for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++)
     {
-      if (size <= iteratorA->size)
+      if ((iteratorA->size - size) >= 0)
       {
         cout << "Found a block of size " << iteratorA->size << endl;
         iteratorA->size -= size;
-        if (iteratorA->size == 0)
-        {
-          availableBlocks.erase(iteratorA);
-        }
+        startingAddress = iteratorA->startingAddress;
+        iteratorA->startingAddress += size;
         inUseBlocks.push_front(Block(iteratorA->startingAddress, size, processId, blockId));
         cout << "Success in allocating a block" << endl;
         found = true;
@@ -200,26 +222,47 @@ void load(int processId, int size, string blockId, string whichAlgorithm)
  
 void allocate(int processId, int size, string blockId, string whichAlgorithm)
 {
-  
-  list<Block>::iterator iteratorA, iteratorI;
-  cout << "\nTransaction: request to load process " << processId << ", block ID " << blockId << " using " << size << " bytes" << endl; 
-
+  list<Block>::iterator iteratorA, iteratorB;
+  int temporarySize = 15 * megabyte;
+  bool found = false, other = false;
+  cout << "\nTransaction: request to allocate " << size << " bytes for process " << processId << ", block ID: " << blockId << endl; 
   if (whichAlgorithm == "B")
   {
+    for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++) 
+    {
+      if((iteratorA->size - size) < temporarySize && (iteratorA->size - size) > 0)
+      {
+        temporarySize = (iteratorA->size - size);
+        iteratorB = iteratorA;
+        found = true;
+        other = true;
+      }
+    }
+    if (other == true)
+    {
+      for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++)
+      {
+        if (iteratorA->startingAddress == iteratorB->startingAddress)
+        {
+          iteratorA->size -= size;
+          startingAddress = iteratorA->startingAddress;
+          iteratorA->startingAddress += size;
+          inUseBlocks.push_front(Block(startingAddress, size, processId, blockId)); 
+          break;
+        }
+      }
+    }
   }
   else if (whichAlgorithm == "F")
   {
-    bool found = false;
     for (iteratorA = availableBlocks.begin(); iteratorA != availableBlocks.end(); iteratorA++)
     {
-      if (size <= iteratorA->size)
+      if ((iteratorA->size - size) >= 0)
       {
         cout << "Found a block of size " << iteratorA->size << endl;
         iteratorA->size -= size;
-        if (iteratorA->size == 0)
-        {
-          availableBlocks.erase(iteratorA);
-        }
+        startingAddress = iteratorA->startingAddress;
+        iteratorA->startingAddress += size;
         inUseBlocks.push_front(Block(iteratorA->startingAddress, size, processId, blockId));
         cout << "Success in allocating a block" << endl;
         found = true;
